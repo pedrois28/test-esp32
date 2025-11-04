@@ -1,60 +1,45 @@
-// === SERVER.IO para Render + Wokwi ===
+// === Servidor WebSocket puro, compatível com ESP32 ===
+const WebSocket = require("ws");
+const PORT = process.env.PORT || 10000;
 
-const socketio = require("socket.io");
-
-const PORT = process.env.PORT || 10000; // Render define automaticamente
-const io = socketio({
-  cors: { origin: "*" }
-});
-
+const wss = new WebSocket.Server({ port: PORT });
 const clients = {};
 
-const log = (emoji, msg) => {
-  const time = new Date().toLocaleTimeString("pt-BR", { hour12: false });
-  console.log(`[${time}] ${emoji} ${msg}`);
-};
+function log(icon, msg) {
+  const t = new Date().toLocaleTimeString("pt-BR", { hour12: false });
+  console.log(`[${t}] ${icon} ${msg}`);
+}
 
-io.on("connection", (socket) => {
-  log("🔗", `Nova ESP conectada: ${socket.id}`);
+wss.on("connection", (ws) => {
+  log("🔗", "Novo cliente conectado");
 
-  socket.on("registrar", (id) => {
-    clients[id] = socket.id;
-    socket.deviceId = id;
-    log("✅", `Registrado dispositivo: ${id} (socket: ${socket.id})`);
-    socket.emit("registrado", `Dispositivo ${id} registrado com sucesso!`);
-  });
-
-  socket.on("comando", (data) => {
+  ws.on("message", (msg) => {
     try {
-      const origem = socket.deviceId || socket.id;
-      const destino = data.destino;
-      const comando = data.comando;
-
-      log("📤", `Comando recebido de ${origem}: '${comando}' → destino: ${destino}`);
-
-      const destinoSocket = clients[destino];
-      if (destinoSocket) {
-        io.to(destinoSocket).emit("acao", comando);
-        log("➡️", `Comando '${comando}' enviado com sucesso para ${destino}`);
-      } else {
-        log("⚠️", `Destino não encontrado: ${destino}`);
-        socket.emit("erro", `Destino '${destino}' não encontrado.`);
+      const data = JSON.parse(msg);
+      if (data.registrar) {
+        clients[data.registrar] = ws;
+        ws.deviceId = data.registrar;
+        log("✅", `Registrado dispositivo: ${data.registrar}`);
+      } else if (data.destino && data.comando) {
+        const destino = clients[data.destino];
+        if (destino) {
+          destino.send(JSON.stringify({ acao: data.comando }));
+          log("➡️", `Comando '${data.comando}' enviado para ${data.destino}`);
+        } else {
+          log("⚠️", `Destino não encontrado: ${data.destino}`);
+        }
       }
     } catch (err) {
-      log("❌", `Erro ao processar comando: ${err.message}`);
+      log("❌", "Erro ao processar mensagem: " + err.message);
     }
   });
 
-  socket.on("disconnect", () => {
-    log("🔌", `ESP desconectada: ${socket.deviceId || socket.id}`);
+  ws.on("close", () => {
+    log("🔌", `Cliente desconectado (${ws.deviceId || "sem ID"})`);
     for (let id in clients) {
-      if (clients[id] === socket.id) {
-        delete clients[id];
-        break;
-      }
+      if (clients[id] === ws) delete clients[id];
     }
   });
 });
 
-io.listen(PORT);
-log("🚀", `Servidor iniciado na porta ${PORT} e aguardando conexões...`);
+log("🚀", `Servidor WebSocket puro iniciado na porta ${PORT}`);
