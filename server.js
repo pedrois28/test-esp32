@@ -1,6 +1,6 @@
-const { Server } = require("socket.io");
-const PORT = process.env.PORT || 3000;
-const io = new Server(PORT, { cors: { origin: "*" } });
+const io = require("socket.io")(process.env.PORT || 3000, {
+  cors: { origin: "*" }
+});
 
 const clients = {};
 
@@ -16,10 +16,14 @@ io.on("connection", (socket) => {
     const destinoSocket = clients[data.destino];
     if (destinoSocket) {
       io.to(destinoSocket).emit("acao", data.comando);
+    } else {
+      console.log("⚠️ Destino não encontrado:", data.destino);
     }
   });
 
-  socket.on("disconnect", () => console.log("❌ ESP desconectada:", socket.id));
+  socket.on("disconnect", () =>
+    console.log("❌ ESP desconectada:", socket.id)
+  );
 });
 
-console.log(`🚀 Servidor rodando na porta ${PORT}`);
+console.log("🚀 Servidor iniciado...");
