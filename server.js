@@ -1,7 +1,7 @@
 // === Servidor WebSocket seguro para ESP32 no Wokwi ===
 import { WebSocketServer } from "ws";
 
-const PORT = process.env.PORT || 443;
+const PORT = 443;
 const wss = new WebSocketServer({ noServer: true, path: "/ws" });
 const clients = {};
 
@@ -50,6 +50,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "0.0.0.0", () => {
   log("🚀", `Servidor WebSocket seguro iniciado na porta ${PORT}, path /ws`);
 });
