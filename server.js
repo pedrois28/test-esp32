@@ -1,14 +1,22 @@
-// === Servidor WebSocket puro compatível com ESP32 ===
-const WebSocket = require("ws");
-const PORT = process.env.PORT || 10000;
+// === Servidor WebSocket seguro para ESP32 no Wokwi ===
+import { WebSocketServer } from "ws";
 
-const wss = new WebSocket.Server({ port: PORT, path: "/ws" });
+const PORT = process.env.PORT || 443;
+const wss = new WebSocketServer({ noServer: true, path: "/ws" });
 const clients = {};
 
 function log(icon, msg) {
   const t = new Date().toLocaleTimeString("pt-BR", { hour12: false });
   console.log(`[${t}] ${icon} ${msg}`);
 }
+
+// Render trata HTTPS, mas precisamos do upgrade do HTTP → WS
+const server = (await import("http")).createServer();
+server.on("upgrade", (req, socket, head) => {
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit("connection", ws, req);
+  });
+});
 
 wss.on("connection", (ws) => {
   log("🔗", "Novo cliente conectado");
@@ -42,4 +50,6 @@ wss.on("connection", (ws) => {
   });
 });
 
-log("🚀", `Servidor WebSocket puro iniciado na porta ${PORT}, path /ws`);
+server.listen(PORT, () => {
+  log("🚀", `Servidor WebSocket seguro iniciado na porta ${PORT}, path /ws`);
+});
