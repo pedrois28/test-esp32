@@ -1,7 +1,6 @@
-// === Servidor WebSocket puro (sem SSL) compatível com Wokwi ===
 import { WebSocketServer } from "ws";
 
-const PORT = 80; // porta padrão HTTP — compatível com Wokwi Web
+const PORT = 443; // HTTPS padrão
 const wss = new WebSocketServer({ port: PORT, path: "/ws" });
 const clients = {};
 
@@ -42,4 +41,4 @@ wss.on("connection", (ws) => {
   });
 });
 
-log("🚀", `Servidor WebSocket iniciado na porta ${PORT}, path /ws`);
+log("🚀", `Servidor WebSocket seguro iniciado na porta ${PORT}, path /ws`);
