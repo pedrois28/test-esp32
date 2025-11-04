@@ -1,16 +1,14 @@
-// === SERVER.IO com LOGS MELHORADOS ===
-// Compatível com Socket.IO v2.x
-// Mostra todas as ações entre ESPs com cores e timestamps
+// === SERVER.IO para Render + Wokwi ===
 
 const socketio = require("socket.io");
-const PORT = process.env.PORT || 443; // 🔁 Usar porta 443 padrão HTTPS
+
+const PORT = process.env.PORT || 10000; // Render define automaticamente
 const io = socketio({
   cors: { origin: "*" }
 });
 
-const clients = {}; // Armazena ESPs conectadas
+const clients = {};
 
-// Função auxiliar para logs com timestamp
 const log = (emoji, msg) => {
   const time = new Date().toLocaleTimeString("pt-BR", { hour12: false });
   console.log(`[${time}] ${emoji} ${msg}`);
@@ -19,7 +17,6 @@ const log = (emoji, msg) => {
 io.on("connection", (socket) => {
   log("🔗", `Nova ESP conectada: ${socket.id}`);
 
-  // Quando um dispositivo se registra
   socket.on("registrar", (id) => {
     clients[id] = socket.id;
     socket.deviceId = id;
@@ -27,7 +24,6 @@ io.on("connection", (socket) => {
     socket.emit("registrado", `Dispositivo ${id} registrado com sucesso!`);
   });
 
-  // Quando recebe um comando de uma ESP
   socket.on("comando", (data) => {
     try {
       const origem = socket.deviceId || socket.id;
@@ -49,7 +45,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Quando um dispositivo se desconecta
   socket.on("disconnect", () => {
     log("🔌", `ESP desconectada: ${socket.deviceId || socket.id}`);
     for (let id in clients) {
@@ -61,6 +56,5 @@ io.on("connection", (socket) => {
   });
 });
 
-// 🔁 Escuta na porta HTTPS padrão (Render redireciona automaticamente)
 io.listen(PORT);
-log("🚀", `Servidor iniciado e aguardando conexões na porta ${PORT}...`);
+log("🚀", `Servidor iniciado na porta ${PORT} e aguardando conexões...`);
