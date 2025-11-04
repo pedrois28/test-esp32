@@ -1,8 +1,8 @@
-// === Servidor WebSocket puro, compatível com ESP32 ===
+// === Servidor WebSocket puro compatível com ESP32 ===
 const WebSocket = require("ws");
 const PORT = process.env.PORT || 10000;
 
-const wss = new WebSocket.Server({ port: PORT });
+const wss = new WebSocket.Server({ port: PORT, path: "/ws" });
 const clients = {};
 
 function log(icon, msg) {
@@ -30,7 +30,7 @@ wss.on("connection", (ws) => {
         }
       }
     } catch (err) {
-      log("❌", "Erro ao processar mensagem: " + err.message);
+      log("❌", "Erro: " + err.message);
     }
   });
 
@@ -42,4 +42,4 @@ wss.on("connection", (ws) => {
   });
 });
 
-log("🚀", `Servidor WebSocket puro iniciado na porta ${PORT}`);
+log("🚀", `Servidor WebSocket puro iniciado na porta ${PORT}, path /ws`);
