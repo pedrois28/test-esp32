@@ -2,7 +2,9 @@
 // Compatível com Socket.IO v2.x
 // Mostra todas as ações entre ESPs com cores e timestamps
 
-const io = require("socket.io")(process.env.PORT || 3000, {
+const socketio = require("socket.io");
+const PORT = process.env.PORT || 443; // 🔁 Usar porta 443 padrão HTTPS
+const io = socketio({
   cors: { origin: "*" }
 });
 
@@ -20,10 +22,8 @@ io.on("connection", (socket) => {
   // Quando um dispositivo se registra
   socket.on("registrar", (id) => {
     clients[id] = socket.id;
-    socket.deviceId = id; // Salva ID dentro do socket
+    socket.deviceId = id;
     log("✅", `Registrado dispositivo: ${id} (socket: ${socket.id})`);
-
-    // Retorna confirmação ao dispositivo
     socket.emit("registrado", `Dispositivo ${id} registrado com sucesso!`);
   });
 
@@ -52,7 +52,6 @@ io.on("connection", (socket) => {
   // Quando um dispositivo se desconecta
   socket.on("disconnect", () => {
     log("🔌", `ESP desconectada: ${socket.deviceId || socket.id}`);
-    // Remove da lista de clientes
     for (let id in clients) {
       if (clients[id] === socket.id) {
         delete clients[id];
@@ -62,4 +61,6 @@ io.on("connection", (socket) => {
   });
 });
 
-log("🚀", "Servidor iniciado e aguardando conexões...");
+// 🔁 Escuta na porta HTTPS padrão (Render redireciona automaticamente)
+io.listen(PORT);
+log("🚀", `Servidor iniciado e aguardando conexões na porta ${PORT}...`);
