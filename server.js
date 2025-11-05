@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 
-const PORT = process.env.PORT || 443; // render já usa 443
+const PORT = process.env.PORT || 443; // Porta HTTPS segura
 const wss = new WebSocketServer({ port: PORT, path: "/ws" });
 
 const clients = {};
@@ -25,12 +25,10 @@ wss.on("connection", (ws) => {
         if (destino) {
           destino.send(JSON.stringify({ acao: data.comando }));
           log("➡️", `Comando '${data.comando}' enviado para ${data.destino}`);
-        } else {
-          log("⚠️", `Destino não encontrado: ${data.destino}`);
         }
       }
     } catch (err) {
-      log("❌", "Erro ao processar mensagem: " + err.message);
+      log("❌", "Erro: " + err.message);
     }
   });
 
