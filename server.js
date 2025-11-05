@@ -1,6 +1,6 @@
 import { WebSocketServer } from "ws";
 
-const PORT = 443; // HTTPS padrão
+const PORT = process.env.PORT || 10000; // Render define PORT automaticamente
 const wss = new WebSocketServer({ port: PORT, path: "/ws" });
 const clients = {};
 
@@ -35,10 +35,8 @@ wss.on("connection", (ws) => {
 
   ws.on("close", () => {
     log("🔌", `Cliente desconectado (${ws.deviceId || "sem ID"})`);
-    for (let id in clients) {
-      if (clients[id] === ws) delete clients[id];
-    }
+    for (let id in clients) if (clients[id] === ws) delete clients[id];
   });
 });
 
-log("🚀", `Servidor WebSocket seguro iniciado na porta ${PORT}, path /ws`);
+log("🚀", `Servidor WebSocket iniciado na porta ${PORT}, path /ws`);
