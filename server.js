@@ -1,8 +1,7 @@
 import { WebSocketServer } from "ws";
 
-const PORT = process.env.PORT || 443; // Porta HTTPS segura
+const PORT = 443; // HTTPS padrão
 const wss = new WebSocketServer({ port: PORT, path: "/ws" });
-
 const clients = {};
 
 function log(icon, msg) {
@@ -25,6 +24,8 @@ wss.on("connection", (ws) => {
         if (destino) {
           destino.send(JSON.stringify({ acao: data.comando }));
           log("➡️", `Comando '${data.comando}' enviado para ${data.destino}`);
+        } else {
+          log("⚠️", `Destino não encontrado: ${data.destino}`);
         }
       }
     } catch (err) {
