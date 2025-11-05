@@ -1,7 +1,8 @@
 import { WebSocketServer } from "ws";
 
-const PORT = 443; // HTTPS padrão
+const PORT = process.env.PORT || 443; // render já usa 443
 const wss = new WebSocketServer({ port: PORT, path: "/ws" });
+
 const clients = {};
 
 function log(icon, msg) {
@@ -29,7 +30,7 @@ wss.on("connection", (ws) => {
         }
       }
     } catch (err) {
-      log("❌", "Erro: " + err.message);
+      log("❌", "Erro ao processar mensagem: " + err.message);
     }
   });
 
